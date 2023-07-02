@@ -21,8 +21,8 @@ app.use((req, res, next) => {
 });
 
 // http://localhost:3000/app
-app.use("/", function (req, res) {
-  res.status(503).send({ message : "Ведутся технические работы." });
+app.use("*", function (req, res) {
+  res.status(404).send({ message : "Ведутся технические работы." });
 });
 
 //http://localhost:3000/users
