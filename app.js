@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 
 // http://localhost:3000/app
 app.use("*", function (req, res) {
-  res.status(404).send({ message : "Ведутся технические работы." });
+  sendError(res, { name: "CastError" });
 });
 
 //http://localhost:3000/users
@@ -30,7 +30,6 @@ app.use("/users", require("./routes/users"));
 
 //http://localhost:3000/cards
 app.use("/cards", require("./routes/cards"));
-
 
 // если всё ок , то бозон Хиггса получен
 app.listen(PORT, () => {
