@@ -1,15 +1,12 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const sendErrorMessage = require("./utils/errors");
 const { PORT = 3000 } = process.env;
-const app = express();
 
-//причем тут вообще мангусты??
+const app = express();
 app.use(express.json());
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb ", {
   family: 4,
-  //useNewUrlParser: true,
-  //useCreateIndex: true,
-  //useFindAndModify: falseconst http = require("http");
 });
 
 // захардкодили идентификатор пользователя
@@ -20,16 +17,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// http://localhost:3000/app
-app.use("*", function (req, res) {
-  sendError(res, { message: "Объект найден или был запрошен несуществующий роут" });
-});
-
-//http://localhost:3000/users
 app.use("/users", require("./routes/users"));
-
-//http://localhost:3000/cards
 app.use("/cards", require("./routes/cards"));
+
+app.use('*',function(req, res) { sendErrorMessage(res,{name:'CastError'}) });
+
 
 // если всё ок , то бозон Хиггса получен
 app.listen(PORT, () => {

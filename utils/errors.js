@@ -1,24 +1,13 @@
-const ERROR_INCORRECT = 400;
-const ERROR_NOTFOUND = 404;
-const ERROR_DEFAULT = 500;
-
-module.exports = sendError = (res, err) => {
+module.exports = sendErrorMessage = (res, err) => {
   switch (err.name) {
     case "ValidationError":
-      res
-        .status(ERROR_INCORRECT)
-        .send({ message: "Переданы некорректные данные" });
+      res.status(400).send({ message : " Переданы некорректные данные в методы создания карточки, пользователя, обновления аватара пользователя или профиля" });
       break;
     case "CastError":
-      res
-        .status(ERROR_NOTFOUND)
-        .send({
-          message: "Объект найден или был запрошен несуществующий роут",
-        });
+      res.status(404).send({ message : "Запрашиваемый пользователь не найден." });
       break;
     default:
-      res
-        .status(ERROR_DEFAULT)
-        .send({ message: "На сервере произошла ошибка" });
+      res.status(500).send({ message : "Сервер не отвечает , повторите запрос позднее"});
   }
-};
+
+}
