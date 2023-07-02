@@ -20,8 +20,9 @@ app.use((req, res, next) => {
 app.use("/users", require("./routes/users"));
 app.use("/cards", require("./routes/cards"));
 
-app.use('*',function(req, res) { sendErrorMessage(res,{name:'CastError'}) });
-
+app.use("*", function (req, res) {
+  sendErrorMessage(res, { name: "CastError" });
+});
 
 // если всё ок , то бозон Хиггса получен
 app.listen(PORT, () => {
