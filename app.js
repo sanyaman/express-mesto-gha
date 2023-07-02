@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 
 // http://localhost:3000/app
 app.use("*", function (req, res) {
-  sendError(res, { name: "CastError" });
+  sendError(res, { message: "Объект найден или был запрошен несуществующий роут" });
 });
 
 //http://localhost:3000/users
