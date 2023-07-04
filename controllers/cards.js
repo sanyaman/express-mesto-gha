@@ -4,7 +4,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 
 module.exports.createCard = (req, res) => {
   console.log(req.user._id);
-  const { name, link, owner = req.user._id} = req.body;
+  const { name, link, owner = req.user._id } = req.body;
 
   card
     .create({
@@ -37,7 +37,7 @@ module.exports.deleteCard = (req, res) => {
       })
       .catch((err) => sendErrorMessage(res, err));
   } else {
-    res.status(ERROR_INCORRECT).sendErrorMessage(res, { name: "ValidationError" });
+    sendErrorMessage(res, { name: "ValidationError" });
   }
 };
 
@@ -61,7 +61,7 @@ module.exports.likeCard = (req, res) => {
       })
       .catch((err) => sendErrorMessage(res, err));
   } else {
-    res.status(ERROR_INCORRECT).sendErrorMessage(res, { name: "ValidationError" });
+    sendErrorMessage(res, { name: "ValidationError" });
   }
 };
 
@@ -85,6 +85,6 @@ module.exports.dislikeCard = (req, res) => {
       })
       .catch((err) => sendErrorMessage(res, err));
   } else {
-    res.status(ERROR_INCORRECT).sendErrorMessage(res, { name: "ValidationError" });
+    sendErrorMessage(res, { name: "ValidationError" });
   }
 };
