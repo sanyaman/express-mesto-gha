@@ -4,7 +4,7 @@ const ObjectId = require("mongoose").Types.ObjectId;
 
 module.exports.createCard = (req, res) => {
   console.log(req.user._id);
-  const { name, link, owner = req.user._id, likes = [], createAt } = req.body;
+  const { name, link, owner = req.user._id } = req.body;
 
   card
     .create({
@@ -39,7 +39,7 @@ module.exports.deleteCard = (req, res) => {
       })
       .catch((err) => sendErrorMessage(res, err));
   } else {
-    sendErrorMessage(res, { name: "ValidationError" });
+    res.status(ERROR_INCORRECT).sendErrorMessage(res, { name: "ValidationError" });
   }
 };
 
@@ -51,7 +51,7 @@ module.exports.likeCard = (req, res) => {
         { $addToSet: { likes: req.user._id } },
         {
           new: true,
-          runValidators: true,
+          //runValidators: true,
         }
       )
       .then((cards) => {
@@ -63,7 +63,7 @@ module.exports.likeCard = (req, res) => {
       })
       .catch((err) => sendErrorMessage(res, err));
   } else {
-    sendErrorMessage(res, { name: "ValidationError" });
+    res.status(ERROR_INCORRECT).sendErrorMessage(res, { name: "ValidationError" });
   }
 };
 
@@ -75,7 +75,7 @@ module.exports.dislikeCard = (req, res) => {
         { $pull: { likes: req.user._id } },
         {
           new: true,
-          runValidators: true,
+          //runValidators: true,
         }
       )
       .then((cards) => {
@@ -87,6 +87,6 @@ module.exports.dislikeCard = (req, res) => {
       })
       .catch((err) => sendErrorMessage(res, err));
   } else {
-    sendErrorMessage(res, { name: "ValidationError" });
+    res.status(ERROR_INCORRECT).sendErrorMessage(res, { name: "ValidationError" });
   }
 };
