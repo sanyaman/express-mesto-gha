@@ -49,7 +49,7 @@ module.exports.likeCard = (req, res) => {
         { $addToSet: { likes: req.user._id } },
         {
           new: true,
-          runValidators: true,
+          //runValidators: true,
         }
       )
       .then((cards) => {
@@ -73,7 +73,7 @@ module.exports.dislikeCard = (req, res) => {
         { $pull: { likes: req.user._id } },
         {
           new: true,
-          runValidators: true,
+          //runValidators: true,
         }
       )
       .then((cards) => {
