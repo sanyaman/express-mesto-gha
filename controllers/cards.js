@@ -4,15 +4,13 @@ const ObjectId = require("mongoose").Types.ObjectId;
 
 module.exports.createCard = (req, res) => {
   console.log(req.user._id);
-  const { name, link, owner = req.user._id, likes = [], createAt } = req.body;
+  const { name, link, owner = req.user._id} = req.body;
 
   card
     .create({
       name,
       link,
       owner,
-      likes,
-      createAt,
     })
     .then((card) => res.send({ data: card }))
     .catch((err) => sendErrorMessage(res, err));
