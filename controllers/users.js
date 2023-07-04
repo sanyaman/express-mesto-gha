@@ -30,7 +30,7 @@ module.exports.getUserById = (req, res) => {
       })
       .catch((err) => sendErrorMessage(res, err));
   } else {
-    res.status(HTTP_STATUS_INTERNAL_SERVER_ERROR).sendErrorMessage(res, { name: "ValidationError" });
+    sendErrorMessage(res, { name: "ValidationError" });
   }
 };
 
