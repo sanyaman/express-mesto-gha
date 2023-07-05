@@ -28,11 +28,12 @@ module.exports.deleteCard = (req, res) => {
   if (ObjectId.isValid(req.params.cardId)) {
     card
       .findByIdAndRemove(req.params.cardId)
+      .orFail()
       .then((cards) => {
         if (cards) {
           res.send({ data: cards });
         } else {
-          return Promise.reject({ name: "CastError" });
+          return Promise.reject({ name: "DocumentNotFoundError" });
         }
       })
       .catch((err) => sendErrorMessage(res, err));
@@ -52,11 +53,12 @@ module.exports.likeCard = (req, res) => {
           //runValidators: true,
         }
       )
+      .orFail()
       .then((cards) => {
         if (cards) {
           res.send({ data: cards });
         } else {
-          return Promise.reject({ name: "CastError" });
+          return Promise.reject({ name: "DocumentNotFoundError" });
         }
       })
       .catch((err) => sendErrorMessage(res, err));
@@ -76,11 +78,12 @@ module.exports.dislikeCard = (req, res) => {
           //runValidators: true,
         }
       )
+      .orFail()
       .then((cards) => {
         if (cards) {
           res.send({ data: cards });
         } else {
-          return Promise.reject({ name: "CastError" });
+          return Promise.reject({ name: "DocumentNotFoundError" });
         }
       })
       .catch((err) => sendErrorMessage(res, err));
