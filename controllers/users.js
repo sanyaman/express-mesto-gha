@@ -30,7 +30,7 @@ module.exports.getUserById = (req, res) => {
       })
       .catch((err) => sendErrorMessage(res, err));
   } else {
-    sendErrorMessage(res, { name: "ValidationError" });
+    sendErrorMessage(err);
   }
 };
 

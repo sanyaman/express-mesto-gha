@@ -5,7 +5,7 @@ const ERROR_DEFAULT = 500;
 
 
 module.exports = sendErrorMessage = (res, err) => {
-  switch (err.name) {
+  switch ( err.name === "ValidationError") {
     case "ValidationError":
       res.status(ERROR_INCORRECT).send({
         message:
