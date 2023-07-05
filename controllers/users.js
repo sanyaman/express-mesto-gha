@@ -28,22 +28,11 @@ module.exports.getUserById = (req, res) => {
           return Promise.reject({ name: "CastError" });
         }
       })
-      .catch((err) => {
-        if (err.name === "ValidationError") {
-          return res.status(ERROR_INCORRECT).send({
-            message: "1111111",
-          });
-        } else if (err.name === "CastError") {
-          return res.status(ERROR_NOTFOUND).send({
-            message: "П222",
-          });
-        } else {
-          return res
-            .status(ERROR_DEFAULT)
-            .send({ message: "33333" });
-        }
-      });
-}};
+      .catch((err) => sendErrorMessage(res, err));
+  } else {
+    sendErrorMessage(res, { name: "ValidationError" });
+  }
+};
 
 module.exports.setUserInfo = (req, res) => {
   const { name, about } = req.body;
