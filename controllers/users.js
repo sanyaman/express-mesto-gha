@@ -21,7 +21,7 @@ module.exports.getUserById = (req, res) => {
   if (ObjectId.isValid(req.params.userId)) {
     user
       .findById(req.params.userId)
-      .orFail(new DocumentNotFoundError('Сервер не отвечает , повторите запрос позднее'))
+      .orFail()
       .then((users) => {
         if (users) {
           res.send({ data: users });
