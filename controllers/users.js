@@ -28,9 +28,12 @@ module.exports.getUserById = (req, res) => {
           return Promise.reject({ name: "CastError" });
         }
       })
-      .catch((err) => sendErrorMessage(res, err));
+      .catch((err) =>
+      res.status(ERROR_NOTFOUND)
+      .sendErrorMessage(res, err));
   } else {
-    sendErrorMessage(res, { name: "ValidationError" });
+    res .status(ERROR_DEFAULT)
+    .sendErrorMessage(res, err);
   }
 };
 
