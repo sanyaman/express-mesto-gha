@@ -1,6 +1,10 @@
 const user = require("../models/user");
 const sendErrorMessage = require("../utils/errors");
-const ObjectId = require("mongoose").Types.ObjectId;
+//const ObjectId = require("mongoose").Types.ObjectId;
+const ERROR_INCORRECT = 400;
+const ERROR_NOTFOUND = 404;
+const ERROR_DEFAULT = 500;
+
 
 module.exports.getUsers = (req, res) => {
   user
@@ -18,21 +22,24 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  if (ObjectId.isValid(req.params.userId)) {
-    user
-      .findById(req.params.userId)
-      .then((users) => {
-        if (users) {
-          res.send({ data: users });
-        } else {
-          return Promise.reject({ name: "CastError" });
-        }
-      })
-      .catch((err) => sendErrorMessage(res, err));
-  } else {
-    sendErrorMessage(res, { name: "ValidationError" });
-  }
+  User.findById(id)
+    .orFail(new Error('ValidationError'))
+    .then((user) => {
+      res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(ERROR_INCORRECT).send({ message: 'Переданы некорректные данные в методы создания карточки, пользователя, обновления аватара пользователя или профиля' });
+      } else if (err.message === 'ValidationError') {
+        res.status(ERROR_NOTFOUND).send({ message: 'Запрашиваемый пользователь не найден' });
+      } else {
+        res.status(ERROR_DEFAULT).send({ message: 'Сервер не отвечает , повторите запрос позднее' });
+      }
+    });
 };
+
+
+
 
 module.exports.setUserInfo = (req, res) => {
   const { name, about } = req.body;
