@@ -29,7 +29,7 @@ module.exports.getUserById = (req, res) => {
         }
       })
       .catch((err) => {
-        if (err.name === 'CastError') {
+        if (err.name === 'ValidationError') {
           res.status(ERROR_INCORRECT).send({ message: 'Переданы некорректные данные в методы создания карточки, пользователя, обновления аватара пользователя или профиля"' });
         } else {
           res.status(ERROR_DEFAULT).send({ message: 'Сервер не отвечает , повторите запрос позднее' });
