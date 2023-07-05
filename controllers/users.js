@@ -28,11 +28,14 @@ module.exports.getUserById = (req, res) => {
           return Promise.reject({ name: "CastError" });
         }
       })
-      .catch((err) => sendErrorMessage(res, err));
-  } else {
-    sendErrorMessage(res, { name: "ValidationError" });
-  }
-};
+      .catch((err) => {
+        if (err.name === 'CastError') {
+          res.status(ERROR_INCORRECT).send({ message: 'Переданы некорректные данные в методы создания карточки, пользователя, обновления аватара пользователя или профиля"' });
+        } else {
+          res.status(ERROR_DEFAULT).send({ message: 'Сервер не отвечает , повторите запрос позднее' });
+        }
+      });
+}};
 
 module.exports.setUserInfo = (req, res) => {
   const { name, about } = req.body;
