@@ -21,7 +21,7 @@ app.use("/users", require("./routes/users"));
 app.use("/cards", require("./routes/cards"));
 
 app.use("*", function (req, res) {
-  sendErrorMessage(res, { name: "CastError" });
+  sendErrorMessage(res, { name: "DocumentNotFoundError" });
 });
 
 // если всё ок , то бозон Хиггса получен

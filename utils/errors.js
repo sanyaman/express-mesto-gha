@@ -12,7 +12,7 @@ module.exports = sendErrorMessage = (res, err) => {
           " Переданы некорректные данные в методы создания карточки, пользователя, обновления аватара пользователя или профиля",
       });
       break;
-    case "CastError":
+    case "DocumentNotFoundError":
       res
         .status(ERROR_NOTFOUND)
         .send({ message: "Запрашиваемый пользователь не найден." });

@@ -21,11 +21,12 @@ module.exports.getUserById = (req, res) => {
   if (ObjectId.isValid(req.params.userId)) {
     user
       .findById(req.params.userId)
+      .orFail(new DocumentNotFoundError('Сервер не отвечает , повторите запрос позднее'))
       .then((users) => {
         if (users) {
           res.send({ data: users });
         } else {
-          return Promise.reject({ name: "CastError" });
+          return Promise.reject({ name: "DocumentNotFoundError" });
         }
       })
       .catch((err) => sendErrorMessage(res, err));
