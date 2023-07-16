@@ -1,93 +1,92 @@
 const card = require("../models/card");
-const sendErrorMessage = require("../utils/errors");
 const ObjectId = require("mongoose").Types.ObjectId;
+const NOT_FOUND_ERROR = require("../errors/404");
+const FORBIDDEN = require("../errors/403");
 
-module.exports.createCard = (req, res) => {
-  console.log(req.user._id);
-  const { name, link, owner = req.user._id } = req.body;
-
+module.exports.createCard = (req, res, next) => {
+  const { name, link, owner = req.user, likes = [], createAt } = req.body;
   card
     .create({
       name,
       link,
       owner,
+      likes,
+      createAt,
     })
-    .then((card) => res.send({ data: card }))
-    .catch((err) => sendErrorMessage(res, err));
+    .then((card) => {
+      if (!card) {
+        throw new NOT_FOUND_ERROR("Некорректные данные при создании карточки");
+      }
+      res.send(card);
+    })
+    .catch(next);
 };
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   card
     .find({})
     .populate("owner")
-    .then((cards) => res.send({ data: cards }))
-    .catch((err) => sendErrorMessage(res, err));
+    .then((cards) => {
+      if (!cards) {
+        throw new NOT_FOUND_ERROR("Карты не найдены");
+      }
+      res.send({ data: cards });
+    })
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
-  if (ObjectId.isValid(req.params.cardId)) {
-    card
-      .findByIdAndRemove(req.params.cardId)
-      .orFail()
-      .then((cards) => {
-        if (cards) {
-          res.send({ data: cards });
-        } else {
-          return Promise.reject({ name: "DocumentNotFoundError" });
-        }
-      })
-      .catch((err) => sendErrorMessage(res, err));
-  } else {
-    sendErrorMessage(res, { name: "ValidationError" });
-  }
+module.exports.deleteCard = (req, res, next) => {
+  card
+    .findById(req.params.cardId)
+    .then((dbCard) => {
+      if (!dbCard) {
+        throw new NOT_FOUND_ERROR("Карта с данным _id не найдена");
+      }
+      if (dbCard.owner.toString() !== req.user) {
+        throw new FORBIDDEN(
+          "Невозможно удалить карту с другим _id пользователя"
+        );
+      }
+      return card
+        .deleteOne({ _id: dbCard._id })
+        .then((c) => {
+          if (c.deletedCount === 1) {
+            return dbCard;
+          }
+        })
+        .then((removedCard) => res.send({ data: removedCard }));
+    })
+    .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
-  if (ObjectId.isValid(req.params.cardId)) {
-    card
-      .findByIdAndUpdate(
-        req.params.cardId,
-        { $addToSet: { likes: req.user._id } },
-        {
-          new: true,
-          //runValidators: true,
+module.exports.likeCard = (req, res, next) => {
+  card
+    .findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user } })
+    .then((cards) => {
+      if (cards) {
+        res.send({ data: cards });
+      } else {
+        if (!cards) {
+          throw new NOT_FOUND_ERROR(
+            `Карта с указанным _id => ${req.params.cardId} <= не найдена`
+          );
         }
-      )
-      .orFail()
-      .then((cards) => {
-        if (cards) {
-          res.send({ data: cards });
-        } else {
-          return Promise.reject({ name: "DocumentNotFoundError" });
-        }
-      })
-      .catch((err) => sendErrorMessage(res, err));
-  } else {
-    sendErrorMessage(res, { name: "ValidationError" });
-  }
+      }
+    })
+    .catch(next);
 };
 
-module.exports.dislikeCard = (req, res) => {
-  if (ObjectId.isValid(req.params.cardId)) {
-    card
-      .findByIdAndUpdate(
-        req.params.cardId,
-        { $pull: { likes: req.user._id } },
-        {
-          new: true,
-          //runValidators: true,
-        }
-      )
-      .orFail()
-      .then((cards) => {
-        if (cards) {
-          res.send({ data: cards });
-        } else {
-          return Promise.reject({ name: "DocumentNotFoundError" });
-        }
-      })
-      .catch((err) => sendErrorMessage(res, err));
-  } else {
-    sendErrorMessage(res, { name: "ValidationError" });
-  }
+module.exports.dislikeCard = (req, res, next) => {
+  card
+    .findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user } })
+    .then((cards) => {
+      if (cards) {
+        res.send({ data: cards });
+      } else {
+        throw new NOT_FOUND_ERROR(
+          `Карта с указанным _id => ${req.params.cardId} <= не найдена`
+        );
+      }
+    })
+    .catch(next);
 };

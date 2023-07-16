@@ -1,45 +1,68 @@
 const user = require("../models/user");
-const sendErrorMessage = require("../utils/errors");
-const ObjectId = require("mongoose").Types.ObjectId;
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const NOT_FOUND_ERROR = require("../errors/404");
+const UNAUTHORIZED = require("../errors/401");
+const CONFLICT_ERROR = require("../errors/409");
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   user
     .find({})
-    .then((users) => res.send({ data: users }))
-    .catch((err) => sendErrorMessage(res, err));
+    .then((users) => {
+      if (!users) {
+        throw new NOT_FOUND_ERROR("Пользователь по указанному _id не найден");
+      }
+      res.send({ data: users });
+    })
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+module.exports.createUser = (req, res, next) => {
+  const { name, about, avatar, email, password } = req.body;
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => user.create({ name, about, avatar, email, password: hash }))
+    .catch(() => {
+      throw new CONFLICT_ERROR("Пользователь с таким email уже существует");
+    })
+    .then((user) => {
+      const { password, ...result } = user.toObject();
+      res.send({ data: result });
+    })
+    .catch(next);
+};
+
+module.exports.getCurrentUser = (req, res, next) => {
+  const userId = req.user;
   user
-    .create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => sendErrorMessage(res, err));
+    .findById(userId)
+    .then((user) => {
+      if (!user) {
+        throw new NOT_FOUND_ERROR("Пользователь по указанному _id не найден");
+      }
+      res.send({ data: user });
+    })
+    .catch(next);
 };
 
-module.exports.getUserById = (req, res) => {
-  if (ObjectId.isValid(req.params.userId)) {
-    user
-      .findById(req.params.userId)
-      .orFail()
-      .then((users) => {
-        if (users) {
-          res.send({ data: users });
-        } else {
-          return Promise.reject({ name: "DocumentNotFoundError" });
-        }
-      })
-      .catch((err) => sendErrorMessage(res, err));
-  } else {
-    sendErrorMessage(res, { name: "ValidationError" });
-  }
+module.exports.getUserById = (req, res, next) => {
+  user
+    .findById(req.params.userId)
+    .then((users) => {
+      if (users) {
+        res.send({ data: users });
+      } else {
+        throw new NOT_FOUND_ERROR("Пользователь по указанному _id не найден");
+      }
+    })
+    .catch(next);
 };
 
-module.exports.setUserInfo = (req, res) => {
+module.exports.setUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   user
     .findByIdAndUpdate(
-      req.user._id,
+      req.user,
       { name, about },
       {
         new: true,
@@ -47,22 +70,64 @@ module.exports.setUserInfo = (req, res) => {
       }
     )
     .then((users) => {
+      if (!users) {
+        throw new NOT_FOUND_ERROR(
+          "Не удалось обновить информацию пользователя по указанному _id"
+        );
+      }
       res.send({ data: users });
     })
-    .catch((err) => sendErrorMessage(res, err));
+    .catch(next);
 };
 
-module.exports.setAvatar = (req, res) => {
+module.exports.setAvatar = (req, res, next) => {
   const { avatar } = req.body;
   user
     .findByIdAndUpdate(
-      req.user._id,
+      req.user,
       { avatar },
       {
         new: true,
-        runValidators: true,
       }
     )
-    .then((users) => res.send({ data: users }))
-    .catch((err) => sendErrorMessage(res, err));
+    .then((user) => {
+      if (!user) {
+        throw new NOT_FOUND_ERROR("Не удалось обновить данные аватара");
+      }
+      res.send({ avatar: user.avatar });
+    })
+    .catch(next);
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  user
+    .findOne({ email })
+    .select("+password")
+    .then((user) => {
+      if (!user) {
+        throw new UNAUTHORIZED("Неправильно указан логин и/или пароль");
+      }
+      return bcrypt
+        .compare(password, user.password)
+        .then((match) => {
+          if (!match) {
+            throw new UNAUTHORIZED("Неправильно указан логин и/или пароль");
+          }
+          const token = jwt.sign({ _id: user._id }, process.env.SECRET_KEY, {
+            expiresIn: "7d",
+          });
+          res.cookie("jwt", token, {
+            maxAge: 3600000,
+            httpOnly: true,
+          });
+          res.send({
+            data: `${user.email} Вход выполнен , начинается телепортация в мета вселенную`,
+          });
+        })
+        .catch(() => {
+          throw new UNAUTHORIZED("Ошибка Авторизации");
+        });
+    })
+    .catch(next);
 };
