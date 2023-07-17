@@ -43,7 +43,7 @@ module.exports.createUser = (req, res, next) => {
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
-  const userId = req.user._id;
+  const userId = req.user;
   user
     .findById(userId)
     // eslint-disable-next-line no-shadow
@@ -73,7 +73,7 @@ module.exports.setUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   user
     .findByIdAndUpdate(
-      req.user._id,
+      req.user,
       { name, about },
       {
         new: true,
@@ -83,7 +83,7 @@ module.exports.setUserInfo = (req, res, next) => {
     .then((users) => {
       if (!users) {
         throw new NOT_FOUND_ERROR(
-          'Не удалось обновить информацию пользователя по указанному _id',
+          'Не удалось обновить информацию пользователя по указанному id',
         );
       }
       res.send({ data: users });
@@ -95,7 +95,7 @@ module.exports.setUserInfo = (req, res, next) => {
         );
       }
       if (err.name === 'CastError') {
-        next(new BAD_REQUEST('Переданные некорректные данные id.'));
+        next(new BAD_REQUEST('Переданные некорректные данные id'));
       }
       return next(err);
     });
@@ -105,7 +105,7 @@ module.exports.setAvatar = (req, res, next) => {
   const { avatar } = req.body;
   user
     .findByIdAndUpdate(
-      req.user._id,
+      req.user,
       { avatar },
       {
         new: true,
