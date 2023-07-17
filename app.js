@@ -68,6 +68,4 @@ app.use(errorServer);
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Запуск адронного коллайдера : ${PORT}`);
-  // eslint-disable-next-line no-console
-  console.log(process.env.SECRET_KEY);
 });
