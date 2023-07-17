@@ -3,6 +3,7 @@ const card = require('../models/card');
 const { ObjectId } = require('mongoose').Types;
 const NOT_FOUND_ERROR = require('../errors/404');
 const FORBIDDEN = require('../errors/403');
+const BAD_REQUEST = require('../errors/400');
 
 module.exports.createCard = (req, res, next) => {
   const {
@@ -20,7 +21,14 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => {
       res.send(card);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(
+          new BAD_REQUEST('Переданы некорректные данные при добавлении карточки'),
+        );
+      }
+      return next(err);
+    });
 };
 
 module.exports.getCards = (req, res, next) => {

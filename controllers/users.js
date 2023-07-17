@@ -6,6 +6,8 @@ const UNAUTHORIZED = require('../errors/401');
 const CONFLICT_ERROR = require('../errors/409');
 const BAD_REQUEST = require('../errors/400');
 
+const { SECRET_KEY, NODE_ENV } = process.env;
+
 module.exports.getUsers = (req, res, next) => {
   user
     .find({})
@@ -148,7 +150,7 @@ module.exports.login = (req, res, next) => {
           if (!match) {
             throw new UNAUTHORIZED('Неправильно указан логин и/или пароль');
           }
-          const token = jwt.sign({ _id: user._id }, process.env.SECRET_KEY, {
+          const token = jwt.sign({ _id: user._id }, NODE_ENV === 'develop' ? SECRET_KEY : 'PUTIN', {
             expiresIn: '7d',
           });
           res.cookie('jwt', token, {
