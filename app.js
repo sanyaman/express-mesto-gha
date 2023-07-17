@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 require('dotenv').config();
-
+console.log(process.env.SECRET_KEY);
 const { PORT, MESTODB } = process.env;
 
 const NOT_FOUND_ERROR = require('./errors/404');
