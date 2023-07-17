@@ -43,7 +43,7 @@ module.exports.createUser = (req, res, next) => {
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
-  const userId = req.user;
+  const userId = req.user._id;
   user
     .findById(userId)
     // eslint-disable-next-line no-shadow
@@ -73,7 +73,7 @@ module.exports.setUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   user
     .findByIdAndUpdate(
-      req.user,
+      req.user._id,
       { name, about },
       {
         new: true,
@@ -105,7 +105,7 @@ module.exports.setAvatar = (req, res, next) => {
   const { avatar } = req.body;
   user
     .findByIdAndUpdate(
-      req.user,
+      req.user._id,
       { avatar },
       {
         new: true,
