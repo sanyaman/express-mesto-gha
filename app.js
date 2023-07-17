@@ -7,7 +7,8 @@ const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 require('dotenv').config();
 
-const { PORT, MESTODB } = process.env;
+const { PORT = 3000 } = process.env;
+const { MESTODB = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const NOT_FOUND_ERROR = require('./errors/404');
 const errorServer = require('./middlewares/errorServer');
