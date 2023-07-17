@@ -4,14 +4,12 @@ const user = require('../models/user');
 const NOT_FOUND_ERROR = require('../errors/404');
 const UNAUTHORIZED = require('../errors/401');
 const CONFLICT_ERROR = require('../errors/409');
+const BAD_REQUEST = require('../errors/400');
 
 module.exports.getUsers = (req, res, next) => {
   user
     .find({})
     .then((users) => {
-      if (!users) {
-        throw new NOT_FOUND_ERROR('Пользователь по указанному _id не найден');
-      }
       res.send({ data: users });
     })
     .catch(next);
@@ -26,16 +24,22 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => user.create({
       name, about, avatar, email, password: hash,
     }))
-    .catch(() => {
-      throw new CONFLICT_ERROR('Пользователь с таким email уже существует');
-    })
-    // eslint-disable-next-line no-shadow
-    .then((user) => {
-      // eslint-disable-next-line no-shadow
-      const { password, ...result } = user.toObject();
-      res.send({ data: result });
-    })
-    .catch(next);
+    .then(() => res.status(201).send({
+      name, about, avatar, email,
+    }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(
+          new BAD_REQUEST(
+            'Переданы некорректные данные при создании пользователя',
+          ),
+        );
+      } if (err.code === 11000) {
+        return next(
+          new CONFLICT_ERROR(`Пользователь с почтой'${email}' уже существует.`),
+        );
+      } return next(err);
+    });
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
@@ -84,7 +88,17 @@ module.exports.setUserInfo = (req, res, next) => {
       }
       res.send({ data: users });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(
+          new BAD_REQUEST('Переданы некорректные данные при обновлении профиля'),
+        );
+      }
+      if (err.name === 'CastError') {
+        next(new BAD_REQUEST('Переданные некорректные данные id.'));
+      }
+      return next(err);
+    });
 };
 
 module.exports.setAvatar = (req, res, next) => {
@@ -95,6 +109,7 @@ module.exports.setAvatar = (req, res, next) => {
       { avatar },
       {
         new: true,
+        runValidators: true,
       },
     )
     // eslint-disable-next-line no-shadow
@@ -104,7 +119,17 @@ module.exports.setAvatar = (req, res, next) => {
       }
       res.send({ avatar: user.avatar });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return next(
+          new BAD_REQUEST('Переданы некорректные данные при обновлении аватара'),
+        );
+      }
+      if (err.name === 'CastError') {
+        return next(new BAD_REQUEST('Переданные не корректные данные id.'));
+      }
+      return next(err);
+    });
 };
 
 module.exports.login = (req, res, next) => {
@@ -133,9 +158,6 @@ module.exports.login = (req, res, next) => {
           res.send({
             data: `${user.email} Вход выполнен , начинается телепортация в мета вселенную`,
           });
-        })
-        .catch(() => {
-          throw new UNAUTHORIZED('Ошибка Авторизации');
         });
     })
     .catch(next);

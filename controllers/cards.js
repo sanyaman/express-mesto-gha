@@ -18,9 +18,6 @@ module.exports.createCard = (req, res, next) => {
     })
     // eslint-disable-next-line no-shadow
     .then((card) => {
-      if (!card) {
-        throw new NOT_FOUND_ERROR('Некорректные данные при создании карточки');
-      }
       res.send(card);
     })
     .catch(next);
@@ -31,9 +28,6 @@ module.exports.getCards = (req, res, next) => {
     .find({})
     .populate('owner')
     .then((cards) => {
-      if (!cards) {
-        throw new NOT_FOUND_ERROR('Карты не найдены');
-      }
       res.send({ data: cards });
     })
     .catch(next);
@@ -66,7 +60,7 @@ module.exports.deleteCard = (req, res, next) => {
 
 module.exports.likeCard = (req, res, next) => {
   card
-    .findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user } })
+    .findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user } }, { new: true })
     .then((cards) => {
       if (cards) {
         res.send({ data: cards });
@@ -81,7 +75,7 @@ module.exports.likeCard = (req, res, next) => {
 
 module.exports.dislikeCard = (req, res, next) => {
   card
-    .findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user } })
+    .findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user } }, { new: true })
     .then((cards) => {
       if (cards) {
         res.send({ data: cards });
