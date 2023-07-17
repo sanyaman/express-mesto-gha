@@ -1,10 +1,13 @@
-const card = require("../models/card");
-const ObjectId = require("mongoose").Types.ObjectId;
-const NOT_FOUND_ERROR = require("../errors/404");
-const FORBIDDEN = require("../errors/403");
+const card = require('../models/card');
+// eslint-disable-next-line import/order, no-unused-vars
+const { ObjectId } = require('mongoose').Types;
+const NOT_FOUND_ERROR = require('../errors/404');
+const FORBIDDEN = require('../errors/403');
 
 module.exports.createCard = (req, res, next) => {
-  const { name, link, owner = req.user, likes = [], createAt } = req.body;
+  const {
+    name, link, owner = req.user, likes = [], createAt,
+  } = req.body;
   card
     .create({
       name,
@@ -13,9 +16,10 @@ module.exports.createCard = (req, res, next) => {
       likes,
       createAt,
     })
+    // eslint-disable-next-line no-shadow
     .then((card) => {
       if (!card) {
-        throw new NOT_FOUND_ERROR("Некорректные данные при создании карточки");
+        throw new NOT_FOUND_ERROR('Некорректные данные при создании карточки');
       }
       res.send(card);
     })
@@ -25,10 +29,10 @@ module.exports.createCard = (req, res, next) => {
 module.exports.getCards = (req, res, next) => {
   card
     .find({})
-    .populate("owner")
+    .populate('owner')
     .then((cards) => {
       if (!cards) {
-        throw new NOT_FOUND_ERROR("Карты не найдены");
+        throw new NOT_FOUND_ERROR('Карты не найдены');
       }
       res.send({ data: cards });
     })
@@ -40,15 +44,16 @@ module.exports.deleteCard = (req, res, next) => {
     .findById(req.params.cardId)
     .then((dbCard) => {
       if (!dbCard) {
-        throw new NOT_FOUND_ERROR("Карта с данным _id не найдена");
+        throw new NOT_FOUND_ERROR('Карта с данным _id не найдена');
       }
       if (dbCard.owner.toString() !== req.user) {
         throw new FORBIDDEN(
-          "Невозможно удалить карту с другим _id пользователя"
+          'Невозможно удалить карту с другим _id пользователя',
         );
       }
       return card
         .deleteOne({ _id: dbCard._id })
+        // eslint-disable-next-line consistent-return
         .then((c) => {
           if (c.deletedCount === 1) {
             return dbCard;
@@ -65,12 +70,10 @@ module.exports.likeCard = (req, res, next) => {
     .then((cards) => {
       if (cards) {
         res.send({ data: cards });
-      } else {
-        if (!cards) {
-          throw new NOT_FOUND_ERROR(
-            `Карта с указанным _id => ${req.params.cardId} <= не найдена`
-          );
-        }
+      } else if (!cards) {
+        throw new NOT_FOUND_ERROR(
+          `Карта с указанным _id => ${req.params.cardId} <= не найдена`,
+        );
       }
     })
     .catch(next);
@@ -84,7 +87,7 @@ module.exports.dislikeCard = (req, res, next) => {
         res.send({ data: cards });
       } else {
         throw new NOT_FOUND_ERROR(
-          `Карта с указанным _id => ${req.params.cardId} <= не найдена`
+          `Карта с указанным _id => ${req.params.cardId} <= не найдена`,
         );
       }
     })

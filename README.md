@@ -20,12 +20,3 @@
 
 `npm run start` — запускает сервер   
 `npm run dev` — запускает сервер с hot-reload
-
-  ![image](https://repository-images.githubusercontent.com/601737892/fd6544e4-8819-4ba1-a55e-d4785340a2b9)
- 
-
-
- 
-
-© by Sanyaman
- 

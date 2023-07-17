@@ -1,16 +1,16 @@
-const user = require("../models/user");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const NOT_FOUND_ERROR = require("../errors/404");
-const UNAUTHORIZED = require("../errors/401");
-const CONFLICT_ERROR = require("../errors/409");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const user = require('../models/user');
+const NOT_FOUND_ERROR = require('../errors/404');
+const UNAUTHORIZED = require('../errors/401');
+const CONFLICT_ERROR = require('../errors/409');
 
 module.exports.getUsers = (req, res, next) => {
   user
     .find({})
     .then((users) => {
       if (!users) {
-        throw new NOT_FOUND_ERROR("Пользователь по указанному _id не найден");
+        throw new NOT_FOUND_ERROR('Пользователь по указанному _id не найден');
       }
       res.send({ data: users });
     })
@@ -18,14 +18,20 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.createUser = (req, res, next) => {
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
   bcrypt
     .hash(password, 10)
-    .then((hash) => user.create({ name, about, avatar, email, password: hash }))
+    .then((hash) => user.create({
+      name, about, avatar, email, password: hash,
+    }))
     .catch(() => {
-      throw new CONFLICT_ERROR("Пользователь с таким email уже существует");
+      throw new CONFLICT_ERROR('Пользователь с таким email уже существует');
     })
+    // eslint-disable-next-line no-shadow
     .then((user) => {
+      // eslint-disable-next-line no-shadow
       const { password, ...result } = user.toObject();
       res.send({ data: result });
     })
@@ -36,9 +42,10 @@ module.exports.getCurrentUser = (req, res, next) => {
   const userId = req.user;
   user
     .findById(userId)
+    // eslint-disable-next-line no-shadow
     .then((user) => {
       if (!user) {
-        throw new NOT_FOUND_ERROR("Пользователь по указанному _id не найден");
+        throw new NOT_FOUND_ERROR('Пользователь по указанному _id не найден');
       }
       res.send({ data: user });
     })
@@ -52,7 +59,7 @@ module.exports.getUserById = (req, res, next) => {
       if (users) {
         res.send({ data: users });
       } else {
-        throw new NOT_FOUND_ERROR("Пользователь по указанному _id не найден");
+        throw new NOT_FOUND_ERROR('Пользователь по указанному _id не найден');
       }
     })
     .catch(next);
@@ -67,12 +74,12 @@ module.exports.setUserInfo = (req, res, next) => {
       {
         new: true,
         runValidators: true,
-      }
+      },
     )
     .then((users) => {
       if (!users) {
         throw new NOT_FOUND_ERROR(
-          "Не удалось обновить информацию пользователя по указанному _id"
+          'Не удалось обновить информацию пользователя по указанному _id',
         );
       }
       res.send({ data: users });
@@ -88,11 +95,12 @@ module.exports.setAvatar = (req, res, next) => {
       { avatar },
       {
         new: true,
-      }
+      },
     )
+    // eslint-disable-next-line no-shadow
     .then((user) => {
       if (!user) {
-        throw new NOT_FOUND_ERROR("Не удалось обновить данные аватара");
+        throw new NOT_FOUND_ERROR('Не удалось обновить данные аватара');
       }
       res.send({ avatar: user.avatar });
     })
@@ -103,21 +111,22 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   user
     .findOne({ email })
-    .select("+password")
+    .select('+password')
+    // eslint-disable-next-line no-shadow
     .then((user) => {
       if (!user) {
-        throw new UNAUTHORIZED("Неправильно указан логин и/или пароль");
+        throw new UNAUTHORIZED('Неправильно указан логин и/или пароль');
       }
       return bcrypt
         .compare(password, user.password)
         .then((match) => {
           if (!match) {
-            throw new UNAUTHORIZED("Неправильно указан логин и/или пароль");
+            throw new UNAUTHORIZED('Неправильно указан логин и/или пароль');
           }
           const token = jwt.sign({ _id: user._id }, process.env.SECRET_KEY, {
-            expiresIn: "7d",
+            expiresIn: '7d',
           });
-          res.cookie("jwt", token, {
+          res.cookie('jwt', token, {
             maxAge: 3600000,
             httpOnly: true,
           });
@@ -126,7 +135,7 @@ module.exports.login = (req, res, next) => {
           });
         })
         .catch(() => {
-          throw new UNAUTHORIZED("Ошибка Авторизации");
+          throw new UNAUTHORIZED('Ошибка Авторизации');
         });
     })
     .catch(next);
